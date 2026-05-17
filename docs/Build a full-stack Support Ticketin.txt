@@ -1,0 +1,336 @@
+Build a full-stack Support Ticketing System web application step-by-step from scratch.
+
+IMPORTANT:
+- Do NOT skip steps.
+- Build everything in the correct development order.
+- After EVERY major step, create/update a `.txt` documentation file explaining:
+  - what was done
+  - why it was done
+  - how the feature works
+  - file/folder purpose
+  - backend/frontend connection flow
+- Documentation must be written in VERY simple beginner-friendly language.
+- Assume the developer is learning while building.
+- Explain concepts like JWT, APIs, middleware, database relations, routing, and authentication in easy language.
+- The `.txt` documentation should become a complete learning guide for the project.
+
+TECH STACK:
+Frontend:
+- React + Vite
+- Tailwind CSS
+- React Router
+- Axios
+
+Backend:
+- Node.js
+- Express.js
+
+Database:
+- PostgreSQL
+
+ORM:
+- Prisma
+
+Authentication:
+- JWT + bcrypt
+
+Email:
+- Nodemailer
+
+Testing:
+- Jest + Supertest
+
+Deployment:
+- Docker
+- GitHub Actions CI/CD
+
+PROJECT GOAL:
+A support ticket management system where:
+- Customers can create and manage their own tickets
+- Agents can view and manage all tickets
+- Tickets have statuses, priorities, comments, and notifications
+
+==================================================
+PHASE 1: PROJECT SETUP
+==================================================
+
+1. Create project folder structure:
+   - frontend/
+   - backend/
+   - docs/
+
+2. Setup React frontend using Vite
+
+3. Setup Tailwind CSS properly
+
+4. Setup Express backend
+
+5. Setup PostgreSQL database
+
+6. Setup Prisma ORM
+
+7. Create initial GitHub repository setup
+
+8. Create environment variable files (.env)
+
+9. Setup ESLint and prettier
+
+10. Create first documentation file:
+   - project-setup.txt
+
+==================================================
+PHASE 2: DATABASE DESIGN
+==================================================
+
+Create database schema with Prisma.
+
+Models:
+1. User
+2. Ticket
+3. Comment
+
+User fields:
+- id
+- name
+- email
+- password
+- role (customer/agent)
+- createdAt
+
+Ticket fields:
+- id
+- title
+- description
+- status (open/pending/closed)
+- priority (low/medium/high)
+- createdBy
+- assignedTo
+- createdAt
+
+Comment fields:
+- id
+- ticketId
+- userId
+- message
+- internalNote
+- createdAt
+
+Add relationships properly.
+
+Generate Prisma migrations.
+
+Create documentation:
+- database-design.txt
+
+==================================================
+PHASE 3: BACKEND AUTHENTICATION
+==================================================
+
+Build authentication system.
+
+Features:
+- Register API
+- Login API
+- Password hashing with bcrypt
+- JWT token generation
+- JWT verification middleware
+- Protected routes
+- Role-based middleware
+
+Create proper folder structure:
+- routes
+- controllers
+- middleware
+- services
+- utils
+
+Add validation and error handling.
+
+Create documentation:
+- authentication-flow.txt
+
+==================================================
+PHASE 4: TICKET APIs
+==================================================
+
+Build REST APIs for tickets.
+
+Features:
+- Create ticket
+- Get all tickets
+- Get single ticket
+- Update ticket
+- Close ticket
+- Delete ticket
+
+Rules:
+- Customers only see their own tickets
+- Agents see all tickets
+
+Add:
+- filtering
+- searching
+- pagination
+
+Create documentation:
+- ticket-api-flow.txt
+
+==================================================
+PHASE 5: COMMENT SYSTEM
+==================================================
+
+Build comment/reply system.
+
+Features:
+- Add comment to ticket
+- Internal notes for agents
+- Fetch comments by ticket
+- Real-time structured comment flow
+
+Create documentation:
+- comments-system.txt
+
+==================================================
+PHASE 6: FRONTEND UI
+==================================================
+
+Build frontend pages:
+
+Public Pages:
+- Login
+- Register
+
+Customer Pages:
+- Dashboard
+- Create Ticket
+- Ticket Details
+
+Agent Pages:
+- Agent Dashboard
+- Ticket Management Panel
+
+Add:
+- Protected routes
+- Axios API integration
+- Authentication context
+- Loading states
+- Error messages
+- Responsive UI
+
+Use clean modern UI with Tailwind CSS.
+
+Create documentation:
+- frontend-flow.txt
+
+==================================================
+PHASE 7: EMAIL NOTIFICATIONS
+==================================================
+
+Integrate Nodemailer.
+
+Send emails when:
+- Ticket created
+- Ticket updated
+- Ticket closed
+
+Use environment variables securely.
+
+Create documentation:
+- email-system.txt
+
+==================================================
+PHASE 8: TESTING
+==================================================
+
+Setup testing system.
+
+Backend:
+- Jest
+- Supertest
+
+Frontend:
+- React Testing Library
+
+Test:
+- Auth routes
+- Ticket routes
+- Role-based access
+- Error handling
+
+Create documentation:
+- testing-guide.txt
+
+==================================================
+PHASE 9: SECURITY & OPTIMIZATION
+==================================================
+
+Add:
+- Helmet
+- Rate limiting
+- Input sanitization
+- API validation
+- Secure JWT handling
+
+Optimize:
+- API responses
+- Database queries
+
+Create documentation:
+- security-guide.txt
+
+==================================================
+PHASE 10: DOCKER & DEPLOYMENT
+==================================================
+
+Setup:
+- Dockerfile
+- docker-compose
+- GitHub Actions CI/CD
+
+Deploy:
+- Frontend
+- Backend
+- PostgreSQL database
+
+Add:
+- environment setup guide
+- deployment instructions
+
+Create documentation:
+- deployment-guide.txt
+
+==================================================
+PHASE 11: ADVANCED FEATURES
+==================================================
+
+Add optional advanced features:
+- File attachments
+- Ticket assignment
+- Dashboard analytics
+- Socket.io real-time updates
+- Department queues
+- Activity logs
+
+Create documentation:
+- advanced-features.txt
+
+==================================================
+FINAL REQUIREMENTS
+==================================================
+
+1. Keep code beginner-friendly and well-structured.
+2. Add comments in important code sections.
+3. Explain every important architectural decision.
+4. Use clean naming conventions.
+5. Maintain production-style folder structure.
+6. Never skip setup instructions.
+7. Always explain WHY a feature is implemented.
+8. All documentation files must be easy enough for a beginner to understand.
+9. Every feature should include:
+   - backend implementation
+   - frontend implementation
+   - API explanation
+   - database relation explanation
+10. Show complete flow from frontend → backend → database.
+
+The goal is not only to build the project but also to fully learn full-stack development while building it.

@@ -1,0 +1,511 @@
+/* Google Font - Inter (modern, readable font) */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+@import "tailwindcss";
+
+/* =============================================
+   GLOBAL CSS DESIGN SYSTEM
+   Support Ticket System - Custom Styles
+   ============================================= */
+
+:root {
+  /* Color Palette */
+  --color-bg-primary: #0f0f1a;
+  --color-bg-secondary: #1a1a2e;
+  --color-bg-card: #16213e;
+  --color-accent-purple: #7c3aed;
+  --color-accent-blue: #3b82f6;
+  --color-accent-green: #10b981;
+  --color-accent-orange: #f59e0b;
+  --color-accent-red: #ef4444;
+  --color-text-primary: #f1f5f9;
+  --color-text-secondary: #94a3b8;
+  --color-border: #334155;
+
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: var(--color-bg-primary);
+  color: var(--color-text-primary);
+  min-height: 100vh;
+}
+
+/* =============================================
+   GLASS MORPHISM CARD STYLE
+   Creates a frosted-glass effect on cards
+   ============================================= */
+.glass-card {
+  background: rgba(22, 33, 62, 0.8);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(51, 65, 85, 0.5);
+  border-radius: 16px;
+}
+
+/* =============================================
+   GRADIENT BUTTON STYLE
+   Used for primary action buttons
+   ============================================= */
+.btn-primary {
+  background: linear-gradient(135deg, #7c3aed, #3b82f6);
+  color: white;
+  padding: 10px 24px;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  letter-spacing: 0.3px;
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(124, 58, 237, 0.4);
+}
+
+.btn-primary:active {
+  transform: translateY(0);
+}
+
+.btn-secondary {
+  background: transparent;
+  color: var(--color-text-primary);
+  padding: 10px 24px;
+  border-radius: 10px;
+  font-weight: 500;
+  font-size: 0.9rem;
+  border: 1px solid var(--color-border);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-secondary:hover {
+  border-color: var(--color-accent-purple);
+  color: var(--color-accent-purple);
+}
+
+/* =============================================
+   APPLICATION NAVBAR
+   ============================================= */
+.app-navbar {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  background:
+    linear-gradient(180deg, rgba(22, 33, 62, 0.98), rgba(15, 23, 42, 0.96));
+  border-bottom: 1px solid rgba(96, 165, 250, 0.16);
+  box-shadow: 0 18px 40px rgba(3, 7, 18, 0.28);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+}
+
+.app-navbar__inner {
+  width: min(100%, 1220px);
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.app-navbar__content {
+  min-height: 74px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.app-navbar__brand,
+.app-navbar__actions,
+.app-navbar__customer-nav,
+.app-navbar__account,
+.app-navbar__user,
+.app-navbar__link,
+.app-navbar__primary,
+.app-navbar__logout {
+  display: flex;
+  align-items: center;
+}
+
+.app-navbar__brand {
+  flex: 0 0 auto;
+  gap: 12px;
+  color: var(--color-text-primary);
+  text-decoration: none;
+}
+
+.app-navbar__logo,
+.app-navbar__avatar {
+  color: #fff;
+  background: linear-gradient(135deg, #7c3aed, #2563eb);
+  display: grid;
+  place-items: center;
+  box-shadow: 0 10px 26px rgba(59, 130, 246, 0.28);
+}
+
+.app-navbar__logo {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+}
+
+.app-navbar__brand-text {
+  display: grid;
+  gap: 2px;
+}
+
+.app-navbar__brand-text span {
+  font-size: 1.1rem;
+  font-weight: 800;
+  line-height: 1;
+  background: linear-gradient(135deg, #c4b5fd, #93c5fd);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.app-navbar__brand-text small {
+  color: #93c5fd;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.app-navbar__actions {
+  flex: 1;
+  justify-content: flex-end;
+  gap: 18px;
+  min-width: 0;
+}
+
+.app-navbar__customer-nav {
+  gap: 8px;
+  padding: 5px;
+  background: rgba(15, 23, 42, 0.46);
+  border: 1px solid rgba(148, 163, 184, 0.14);
+  border-radius: 14px;
+}
+
+.app-navbar__link,
+.app-navbar__primary,
+.app-navbar__logout {
+  justify-content: center;
+  gap: 7px;
+  min-height: 42px;
+  border-radius: 10px;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.9rem;
+  font-weight: 700;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: transform 0.2s ease, background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+.app-navbar__link {
+  padding: 0 14px;
+  color: var(--color-text-secondary);
+}
+
+.app-navbar__link:hover {
+  color: var(--color-text-primary);
+  background: rgba(148, 163, 184, 0.1);
+}
+
+.app-navbar__primary {
+  padding: 0 18px;
+  color: white;
+  background: linear-gradient(135deg, #8b5cf6, #3b82f6);
+  box-shadow: 0 12px 28px rgba(59, 130, 246, 0.28);
+}
+
+.app-navbar__primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 16px 32px rgba(124, 58, 237, 0.32);
+}
+
+.app-navbar__account {
+  flex: 0 0 auto;
+  gap: 14px;
+  padding-left: 18px;
+  border-left: 1px solid rgba(148, 163, 184, 0.18);
+}
+
+.app-navbar__user {
+  gap: 10px;
+  min-width: 0;
+}
+
+.app-navbar__avatar {
+  width: 40px;
+  height: 40px;
+  flex: 0 0 40px;
+  border-radius: 50%;
+}
+
+.app-navbar__user-copy {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+
+.app-navbar__user-copy strong {
+  max-width: 170px;
+  overflow: hidden;
+  color: var(--color-text-primary);
+  font-size: 0.9rem;
+  font-weight: 800;
+  line-height: 1.1;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.app-navbar__user-copy span {
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.app-navbar__user-copy .is-agent {
+  color: #c4b5fd;
+}
+
+.app-navbar__user-copy .is-customer {
+  color: #60a5fa;
+}
+
+.app-navbar__logout {
+  padding: 0 13px;
+  cursor: pointer;
+  color: #f87171;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(248, 113, 113, 0.28);
+}
+
+.app-navbar__logout:hover {
+  color: #fecaca;
+  background: rgba(239, 68, 68, 0.18);
+  border-color: rgba(248, 113, 113, 0.42);
+}
+
+@media (max-width: 820px) {
+  .app-navbar__inner {
+    padding: 0 16px;
+  }
+
+  .app-navbar__content {
+    min-height: 78px;
+    gap: 14px;
+  }
+
+  .app-navbar__brand-text small,
+  .app-navbar__user-copy {
+    display: none;
+  }
+
+  .app-navbar__actions {
+    gap: 10px;
+  }
+
+  .app-navbar__account {
+    gap: 8px;
+    padding-left: 10px;
+  }
+
+  .app-navbar__customer-nav {
+    background: transparent;
+    border: 0;
+    padding: 0;
+  }
+}
+
+@media (max-width: 620px) {
+  .app-navbar__content {
+    align-items: stretch;
+    flex-direction: column;
+    justify-content: center;
+    padding: 12px 0;
+  }
+
+  .app-navbar__actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .app-navbar__customer-nav {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .app-navbar__link,
+  .app-navbar__primary,
+  .app-navbar__logout {
+    min-height: 40px;
+    padding: 0 11px;
+    font-size: 0.82rem;
+  }
+
+  .app-navbar__account {
+    border-left: 0;
+    padding-left: 0;
+  }
+
+  .app-navbar__avatar {
+    display: none;
+  }
+}
+
+/* =============================================
+   CUSTOM INPUT FIELD STYLES
+   ============================================= */
+.input-field {
+  width: 100%;
+  background: rgba(15, 15, 26, 0.7);
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  color: var(--color-text-primary);
+  padding: 12px 16px;
+  font-size: 0.9rem;
+  font-family: 'Inter', sans-serif;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  outline: none;
+}
+
+.input-field:focus {
+  border-color: var(--color-accent-purple);
+  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.15);
+}
+
+.input-field::placeholder {
+  color: var(--color-text-secondary);
+}
+
+/* =============================================
+   STATUS BADGE STYLES
+   Used to show ticket status visually
+   ============================================= */
+.badge-open {
+  background: rgba(16, 185, 129, 0.15);
+  color: #10b981;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  padding: 3px 12px;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.badge-pending {
+  background: rgba(245, 158, 11, 0.15);
+  color: #f59e0b;
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  padding: 3px 12px;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.badge-closed {
+  background: rgba(148, 163, 184, 0.15);
+  color: #94a3b8;
+  border: 1px solid rgba(148, 163, 184, 0.3);
+  padding: 3px 12px;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.badge-low {
+  background: rgba(59, 130, 246, 0.15);
+  color: #3b82f6;
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  padding: 3px 12px;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.badge-medium {
+  background: rgba(245, 158, 11, 0.15);
+  color: #f59e0b;
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  padding: 3px 12px;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.badge-high {
+  background: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  padding: 3px 12px;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+/* =============================================
+   ANIMATIONS
+   ============================================= */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes shimmer {
+  0% { background-position: -1000px 0; }
+  100% { background-position: 1000px 0; }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.5s ease forwards;
+}
+
+/* Loading skeleton shimmer */
+.skeleton {
+  background: linear-gradient(90deg, #1a1a2e 25%, #252540 50%, #1a1a2e 75%);
+  background-size: 1000px 100%;
+  animation: shimmer 2s infinite;
+  border-radius: 8px;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-bg-secondary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-accent-purple);
+}

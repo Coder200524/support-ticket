@@ -1,0 +1,156 @@
+============================================================
+PHASE 6: FRONTEND UI - COMPLETE LEARNING GUIDE
+Support Ticketing System
+============================================================
+
+WHAT WAS DONE IN THIS PHASE?
+------------------------------
+We built the complete React frontend for our application.
+We created reusable components, connected them with React Router,
+managed authentication state with React Context, and connected
+to our backend API using Axios.
+
+Files created:
+- src/api/axios.js                 (API client)
+- src/context/AuthContext.jsx      (Global authentication state)
+- src/components/ProtectedRoute.jsx(Access control for routes)
+- src/components/Navbar.jsx        (Top navigation bar)
+- src/components/TicketCard.jsx    (Reusable ticket display)
+- src/pages/LoginPage.jsx          (User login screen)
+- src/pages/RegisterPage.jsx       (User registration screen)
+- src/pages/DashboardPage.jsx      (Customer view of their tickets)
+- src/pages/AgentDashboardPage.jsx (Agent view of all tickets)
+- src/pages/CreateTicketPage.jsx   (Form to submit new tickets)
+- src/pages/TicketDetailPage.jsx   (View single ticket & comments)
+- src/App.jsx                      (Main app routing)
+
+
+============================================================
+SECTION 1: REACT CONTEXT - GLOBAL STATE
+============================================================
+
+In React, data normally flows DOWN from parent to child via "props".
+If you need data (like the logged-in user) in many different components,
+passing props everywhere becomes very messy (called "prop drilling").
+
+React Context solves this by creating a global "store" of data.
+
+How AuthContext works:
+1. We create the context: `const AuthContext = createContext()`
+2. We create a Provider component that holds the state (`user`, `token`)
+3. We wrap our entire app in this Provider (in App.jsx)
+4. Any component can access the data using our custom hook:
+   `const { user, login, logout } = useAuth()`
+
+This allows the Navbar to show the user's name, the ProtectedRoute
+to know if they are logged in, and the login page to save the token
+all without passing a single prop!
+
+
+============================================================
+SECTION 2: AXIOS INTERCEPTORS - AUTOMATIC TOKENS
+============================================================
+
+To access protected backend routes, we must send our JWT token
+in the Authorization header of every request:
+  `Authorization: Bearer <token>`
+
+Instead of manually adding this to every single API call in our app,
+we use Axios Interceptors.
+
+Think of an interceptor as a checkpoint that every request passes through.
+Our request interceptor:
+1. Grabs the token from localStorage
+2. Modifies the request to include the header
+3. Sends the request to the backend
+
+Our response interceptor handles the reverse:
+1. If the server responds with 401 Unauthorized (expired token)
+2. It automatically logs the user out and redirects to the login page.
+
+
+============================================================
+SECTION 3: REACT ROUTER - SINGLE PAGE APPLICATION
+============================================================
+
+A traditional website reloads the entire page when you click a link.
+A Single Page Application (SPA) like ours loads the HTML once, and
+JavaScript swaps out the components based on the URL.
+
+React Router handles this for us:
+- `<BrowserRouter>` keeps the UI in sync with the URL
+- `<Routes>` looks through all its children `<Route>` elements and renders the one that matches
+- `<Route path="/login" element={<LoginPage />} />`
+
+Protected Routes:
+We created a custom `<ProtectedRoute>` component.
+If a user tries to access `/dashboard` but isn't logged in,
+ProtectedRoute intercepts them and redirects them to `/login` using `<Navigate>`.
+
+
+============================================================
+SECTION 4: COMPONENT STRUCTURE & REUSABILITY
+============================================================
+
+React is all about reusable Lego blocks (components).
+
+Take `<TicketCard>` for example. Both the Customer Dashboard and
+Agent Dashboard need to display lists of tickets.
+Instead of writing the HTML and CSS for a ticket twice, we wrote it once
+in `TicketCard.jsx`.
+
+Now we can use it like this:
+`<TicketCard key={ticket.id} ticket={ticket} />`
+
+We also extracted common UI elements like the `<Navbar>` so we don't
+have to repeat it on every page.
+
+
+============================================================
+SECTION 5: CONDITIONAL RENDERING
+============================================================
+
+Conditional rendering means showing different things based on a condition.
+
+Examples in our app:
+1. Loading states:
+   `{loading ? <Spinner /> : <Data />}`
+
+2. Role-based UI:
+   `{isAgent && <button>Mark as Internal Note</button>}`
+   This ensures customers don't even see the option for internal notes.
+
+3. Empty states:
+   `{tickets.length === 0 ? <p>No tickets</p> : <TicketList />}`
+
+
+============================================================
+SECTION 6: MANAGING SIDE EFFECTS (useEffect)
+============================================================
+
+`useEffect` is a React Hook that lets you synchronize a component
+with an external system (like a backend API).
+
+In `DashboardPage.jsx`, we want to fetch tickets from the backend
+as soon as the page loads.
+
+```javascript
+useEffect(() => {
+  fetchData(); // Call the API
+}, [statusFilter, priorityFilter]); // Dependency array
+```
+
+The "Dependency array" tells React WHEN to re-run the effect.
+Here, we say: "Run this when the component first mounts, AND anytime
+the statusFilter or priorityFilter changes."
+This makes our search and filtering instantaneous!
+
+
+============================================================
+WHAT'S NEXT? (Phase 7 & 8)
+============================================================
+
+Our core application is complete! Now we will add polish and robustness:
+1. Email Notifications (already implemented in backend, but we'll explain it)
+2. Automated Testing to ensure our code works and doesn't break.
+============================================================

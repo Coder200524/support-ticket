@@ -1,0 +1,284 @@
+============================================================
+PHASE 3: BACKEND AUTHENTICATION - COMPLETE LEARNING GUIDE
+Support Ticketing System
+============================================================
+
+WHAT WAS DONE IN THIS PHASE?
+------------------------------
+We built the complete authentication system:
+1. User Registration API
+2. User Login API  
+3. Password hashing with bcrypt
+4. JWT token generation
+5. JWT verification middleware
+6. Role-based access middleware
+
+Files created:
+- src/controllers/auth.controller.js   (business logic)
+- src/routes/auth.routes.js             (URL routing)
+- src/middleware/auth.middleware.js     (JWT verification)
+- src/middleware/validate.middleware.js (input validation)
+- src/middleware/error.middleware.js    (error handling)
+- src/utils/apiResponse.js             (response helpers)
+- src/config/prisma.js                 (DB singleton)
+
+
+============================================================
+SECTION 1: HOW AUTHENTICATION WORKS (THE BIG PICTURE)
+============================================================
+
+Authentication = Proving WHO you are.
+Authorization = Proving WHAT you're allowed to do.
+
+THE OLD WAY (Sessions):
+  1. User logs in
+  2. Server creates a "session" and stores it in memory
+  3. Server sends a session ID to the browser (as a cookie)
+  4. On every request, browser sends session ID
+  5. Server looks up the session ID in memory to verify
+  ❌ Problem: Sessions use server memory. For millions of users,
+     this doesn't scale. Also doesn't work well with multiple servers.
+
+THE MODERN WAY (JWT Tokens):
+  1. User logs in
+  2. Server creates a JWT token with user info ENCODED INSIDE
+  3. Token is sent to the browser (stored in localStorage or cookie)
+  4. On every request, browser sends the token in the header
+  5. Server VERIFIES the token's signature - no database lookup needed!
+  ✅ Stateless: Server doesn't need to remember anything
+  ✅ Scalable: Works with multiple servers
+  ✅ Portable: Can be sent to any service
+
+
+============================================================
+SECTION 2: WHAT IS A JWT TOKEN?
+============================================================
+
+JWT = JSON Web Token. It has 3 parts separated by dots:
+
+  eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9
+  .
+  eyJpZCI6ImNseDEyMyIsImVtYWlsIjoiam9obkBleGFtcGxlLmNvbSIsInJvbGUiOiJjdXN0b21lciJ9
+  .
+  xQcMUKDCPf8h9G3I8JiomQzp8r6a7xk5TJ8...
+
+PART 1: Header (red)
+  Contains: algorithm used (HS256) and token type (JWT)
+  {"alg": "HS256", "typ": "JWT"}
+
+PART 2: Payload (green)  
+  Contains: your data (called "claims")
+  {
+    "id": "clx123",
+    "email": "john@example.com",
+    "role": "customer",
+    "iat": 1714906800,   <- issued at (Unix timestamp)
+    "exp": 1715511600    <- expires at (Unix timestamp)
+  }
+  Note: This is BASE64 ENCODED - not encrypted!
+  Anyone can decode it. DO NOT put sensitive data here.
+
+PART 3: Signature (blue)
+  Created by: HMACSHA256(base64(header) + "." + base64(payload), secret)
+  This is what proves the token hasn't been tampered with.
+  Only someone who knows the JWT_SECRET can create valid signatures.
+
+VERIFICATION:
+  When server receives a token, it:
+  1. Re-creates the signature using the same secret
+  2. Compares it with the signature in the token
+  3. If they match → token is valid and untampered
+  4. If they don't match → token was forged or modified
+
+You can decode JWT tokens at: https://jwt.io
+
+
+============================================================
+SECTION 3: HOW BCRYPT WORKS
+============================================================
+
+WHY NOT USE MD5 OR SHA256 FOR PASSWORDS?
+MD5("mypassword") = "34819d7beeabb9260a5c854bc85b3e44"
+SHA256 is fast - computers can calculate BILLIONS per second.
+Hackers can pre-compute all possible passwords (rainbow tables).
+
+bcrypt is DESIGNED to be slow:
+  bcrypt("mypassword", 12 rounds) ≈ 300 milliseconds
+
+To crack it, a hacker would need:
+  100,000 common passwords × 300ms = 30,000 seconds = 8+ hours
+  Per user! With modern hardware it's still very impractical.
+
+WHAT IS A SALT?
+A salt is random data added to the password BEFORE hashing.
+  User A: "password" + "abc123" (salt) → hash1
+  User B: "password" + "xyz789" (salt) → hash2
+
+Even if two users have the same password, their hashes differ!
+This defeats rainbow table attacks.
+
+bcrypt AUTOMATICALLY:
+  - Generates a random salt each time
+  - Embeds the salt IN the hash string
+  - Uses it when comparing: bcrypt.compare(input, hash)
+
+bcrypt hash format:
+  $2a$12$randomsalthere.hashedpasswordhere
+
+  $2a = bcrypt version
+  $12 = number of rounds (cost factor)
+  next 22 chars = the salt
+  rest = the hashed password
+
+NEVER:
+  - Store plain-text passwords
+  - Use MD5 or SHA256 for passwords
+  - Use the same salt for all users (defeats the purpose)
+
+
+============================================================
+SECTION 4: THE COMPLETE AUTH FLOW
+============================================================
+
+REGISTRATION FLOW:
+Frontend                    Backend                    Database
+   │                           │                           │
+   │ POST /api/auth/register   │                           │
+   │ {name, email, password}   │                           │
+   │──────────────────────────►│                           │
+   │                           │ Validate inputs           │
+   │                           │ Check email exists        │
+   │                           │──────────────────────────►│
+   │                           │ ◄── No user found         │
+   │                           │ Hash password (bcrypt)    │
+   │                           │ Create user               │
+   │                           │──────────────────────────►│
+   │                           │ ◄── New user object       │
+   │                           │ Generate JWT token        │
+   │                           │ Send welcome email        │
+   │ ◄── { token, user }       │                           │
+   │ Store token in state      │                           │
+
+LOGIN FLOW:
+Frontend                    Backend                    Database
+   │                           │                           │
+   │ POST /api/auth/login      │                           │
+   │ {email, password}         │                           │
+   │──────────────────────────►│                           │
+   │                           │ Find user by email        │
+   │                           │──────────────────────────►│
+   │                           │ ◄── User with hashed pwd  │
+   │                           │ bcrypt.compare(pwd, hash) │
+   │                           │ Generate JWT              │
+   │ ◄── { token, user }       │                           │
+   │ Store in localStorage     │                           │
+
+PROTECTED REQUEST FLOW:
+Frontend                    Backend (Middleware)
+   │                           │
+   │ GET /api/tickets          │
+   │ Authorization: Bearer tok │
+   │──────────────────────────►│
+   │                           │ [authenticate middleware]
+   │                           │ Extract token from header
+   │                           │ jwt.verify(token, secret)
+   │                           │ Decode: {id, email, role}
+   │                           │ Set req.user = decoded
+   │                           │ Call next()
+   │                           │ [ticket controller runs]
+   │ ◄── { tickets: [...] }    │
+
+
+============================================================
+SECTION 5: VALIDATION - WHY IT MATTERS
+============================================================
+
+Without validation, users could submit:
+  - Empty email: ""
+  - Invalid email: "not-an-email"
+  - Weak password: "1"
+  - Malicious code: "<script>alert('hack')</script>"
+
+We use express-validator to define rules:
+
+  body('email')
+    .isEmail()          → Must be a valid email format
+    .normalizeEmail()   → Convert to lowercase (safety)
+
+  body('password')
+    .isLength({ min: 6 }) → At least 6 characters
+    .matches(/pattern/)   → Must contain letters AND numbers
+
+The validate middleware then checks if any rules failed:
+  - If yes: return 422 error with list of broken rules
+  - If no: proceed to controller
+
+
+============================================================
+SECTION 6: ROLE-BASED ACCESS CONTROL (RBAC)
+============================================================
+
+RBAC means different users can do different things based on their role.
+
+Our roles:
+  CUSTOMER can:
+  ✅ Create tickets
+  ✅ View their own tickets
+  ✅ Comment on their own tickets
+  ✅ View their own profile
+  ❌ View other users' tickets
+  ❌ Change ticket status/priority
+  ❌ See internal agent notes
+
+  AGENT can:
+  ✅ View ALL tickets
+  ✅ Update any ticket (status, priority, assignment)
+  ✅ Add internal notes (private to agents)
+  ✅ Assign tickets to themselves or others
+  ✅ Delete any ticket
+
+HOW WE IMPLEMENT IT:
+1. The JWT token contains the role:  { id: "...", role: "agent" }
+2. The authenticate middleware puts it in req.user.role
+3. Controllers check req.user.role before performing actions
+4. The authorize() middleware can block entire routes by role
+
+Example controller check:
+  if (req.user.role === 'customer' && ticket.createdById !== req.user.id) {
+    return sendError(res, 'Access denied.', 403);
+  }
+
+403 = Forbidden (you're authenticated but not authorized)
+401 = Unauthorized (you're not authenticated at all)
+
+
+============================================================
+SECTION 7: API ENDPOINTS CREATED
+============================================================
+
+POST /api/auth/register
+  Body: { name, email, password, role? }
+  Returns: { token, user }
+  Purpose: Create a new account
+
+POST /api/auth/login
+  Body: { email, password }
+  Returns: { token, user }
+  Purpose: Login and get a JWT token
+
+GET /api/auth/me
+  Headers: Authorization: Bearer <token>
+  Returns: { user }
+  Purpose: Get current user profile (protected)
+
+
+============================================================
+WHAT'S NEXT? (Phases 4 & 5)
+============================================================
+
+Next we build:
+1. Ticket CRUD API (Create, Read, Update, Delete)
+2. Comment system with internal notes
+3. Filtering, searching, and pagination
+4. Role-based ticket access control
+============================================================

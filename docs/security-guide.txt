@@ -1,0 +1,103 @@
+============================================================
+PHASE 9: SECURITY & OPTIMIZATION - LEARNING GUIDE
+Support Ticketing System
+============================================================
+
+WHAT WAS DONE IN THIS PHASE?
+------------------------------
+We implemented various security and performance best practices
+throughout the backend codebase.
+
+Most of these were already added to `app.js` and our middleware
+in Phase 1 & 3, but this guide explains WHY we added them.
+
+
+============================================================
+SECTION 1: HELMET (HTTP HEADERS SECURITY)
+============================================================
+
+Code in app.js: `app.use(helmet())`
+
+When a browser loads your API, the server sends HTTP Headers along
+with the data. By default, Express doesn't send highly secure headers.
+
+Helmet automatically adds 11+ security headers, for example:
+- `X-Powered-By`: Express normally sends `X-Powered-By: Express`. Helmet removes
+  this so hackers don't know exactly what technology you're using.
+- `X-DNS-Prefetch-Control`: Stops browsers from aggressively pre-fetching DNS.
+- `Strict-Transport-Security`: Forces the browser to use HTTPS (SSL).
+- `X-Content-Type-Options: nosniff`: Prevents browsers from guessing the file type
+  (which can lead to executing malicious scripts).
+
+
+============================================================
+SECTION 2: RATE LIMITING (BRUTE FORCE PROTECTION)
+============================================================
+
+Code in app.js:
+```javascript
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100 // limit each IP to 100 requests per windowMs
+});
+app.use('/api', limiter);
+```
+
+What if a hacker writes a script to try 10,000 different passwords
+on your login endpoint per second? They might eventually guess right.
+This is called a Brute Force Attack.
+
+Rate limiting tracks the IP address of the requester. If an IP makes
+more than 100 requests in 15 minutes, the server stops processing them
+and automatically returns a `429 Too Many Requests` error.
+
+
+============================================================
+SECTION 3: INPUT SANITIZATION & VALIDATION
+============================================================
+
+"Never trust user input."
+
+If a user submits: `<script>alert('You are hacked!')</script>`
+as their ticket description, and another user views that ticket, their
+browser might execute that code. This is called XSS (Cross-Site Scripting).
+
+Our defense:
+1. `express-validator`: We ensure data is the right type and length.
+2. `.trim()`: We remove whitespace from the start/end of inputs so hackers
+   can't bypass length checks with spaces.
+3. React (Frontend): By default, React escapes all HTML characters.
+   If someone inputs `<script>`, React renders it as harmless text `&lt;script&gt;`
+   instead of executing it.
+
+
+============================================================
+SECTION 4: PRISMA OPTIMIZATIONS (N+1 PROBLEM)
+============================================================
+
+When fetching a list of tickets, we also wanted the name of the user
+who created each ticket.
+
+The WRONG way (N+1 queries):
+```javascript
+// 1 query to get 10 tickets
+const tickets = await prisma.ticket.findMany(); 
+
+// Loop through the 10 tickets and make 10 MORE queries to get users
+for (let ticket of tickets) {
+  ticket.user = await prisma.user.findUnique({ id: ticket.createdById });
+}
+// Total queries: 11 (1 + 10)
+```
+
+The RIGHT way (Prisma Include):
+```javascript
+const tickets = await prisma.ticket.findMany({
+  include: { createdBy: true }
+});
+// Total queries: 1 (Prisma handles the JOIN automatically via SQL)
+```
+
+By using `include`, we prevent the N+1 database query problem, making
+our API incredibly fast.
+============================================================

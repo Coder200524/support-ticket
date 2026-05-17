@@ -1,0 +1,334 @@
+============================================================
+PHASE 2: DATABASE DESIGN - COMPLETE LEARNING GUIDE
+Support Ticketing System
+============================================================
+
+WHAT WAS DONE IN THIS PHASE?
+------------------------------
+We designed the complete database structure for our application.
+We defined what data we need to store, how it's organized,
+and how different pieces of data relate to each other.
+
+We used Prisma ORM + PostgreSQL for this.
+
+
+============================================================
+SECTION 1: WHAT IS A DATABASE? WHY POSTGRESQL?
+============================================================
+
+A DATABASE is organized storage for your application's data.
+Think of it like a perfectly organized filing cabinet.
+
+Without a database:
+  - Data lives in memory (RAM) - lost when server restarts
+  - Can't store thousands of tickets efficiently
+  - No way to search or filter data
+
+With PostgreSQL:
+  - Data persists even when server restarts
+  - Can handle millions of records efficiently
+  - Supports complex queries, filtering, sorting
+  - Enforces data integrity (relationships, constraints)
+
+POSTGRESQL is one of the most popular open-source relational databases.
+"Relational" means data is stored in TABLES with RELATIONSHIPS between them.
+Just like an Excel spreadsheet, but much more powerful.
+
+
+============================================================
+SECTION 2: WHAT IS AN ORM? WHY PRISMA?
+============================================================
+
+ORM = Object-Relational Mapper
+
+The problem ORM solves:
+  Databases speak SQL (Structured Query Language):
+    SELECT * FROM tickets WHERE status = 'open' ORDER BY createdAt DESC;
+
+  JavaScript speaks objects:
+    const tickets = await prisma.ticket.findMany({
+      where: { status: 'open' },
+      orderBy: { createdAt: 'desc' }
+    });
+
+  ORM translates between the two!
+
+WHY PRISMA?
+✅ Auto-generates type-safe JavaScript client
+✅ Migrations keep your database in sync with your schema
+✅ Intuitive syntax - easy to learn
+✅ Prisma Studio - visual database browser GUI
+✅ Great error messages
+
+
+============================================================
+SECTION 3: OUR DATABASE TABLES (MODELS)
+============================================================
+
+We have 3 main tables:
+
+┌─────────────────────────────────────────────────────────┐
+│                     USERS table                          │
+├─────────────┬────────────────────────────────────────────┤
+│ Column      │ Description                                │
+├─────────────┼────────────────────────────────────────────┤
+│ id          │ Unique ID (auto-generated)                 │
+│ name        │ Full name of the user                      │
+│ email       │ Email address (must be unique!)            │
+│ password    │ Hashed password (NEVER plain text)         │
+│ role        │ Either "customer" or "agent"               │
+│ createdAt   │ When the account was created               │
+│ updatedAt   │ When the account was last modified         │
+└─────────────┴────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────┐
+│                     TICKETS table                        │
+├─────────────┬────────────────────────────────────────────┤
+│ Column      │ Description                                │
+├─────────────┼────────────────────────────────────────────┤
+│ id          │ Unique ID                                  │
+│ title       │ Short description of the problem           │
+│ description │ Detailed explanation (long text)           │
+│ status      │ open / pending / closed                    │
+│ priority    │ low / medium / high                        │
+│ createdById │ ID of the user who created this ticket     │
+│ assignedToId│ ID of the agent handling this (optional)   │
+│ createdAt   │ When ticket was created                    │
+│ updatedAt   │ When ticket was last modified              │
+└─────────────┴────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────┐
+│                     COMMENTS table                       │
+├─────────────┬────────────────────────────────────────────┤
+│ Column      │ Description                                │
+├─────────────┼────────────────────────────────────────────┤
+│ id          │ Unique ID                                  │
+│ message     │ The comment text (long text)               │
+│ isInternal  │ true = only agents see this, false = all   │
+│ ticketId    │ Which ticket this comment belongs to       │
+│ userId      │ Who wrote this comment                     │
+│ createdAt   │ When comment was written                   │
+│ updatedAt   │ When comment was last edited               │
+└─────────────┴────────────────────────────────────────────┘
+
+
+============================================================
+SECTION 4: DATABASE RELATIONSHIPS EXPLAINED
+============================================================
+
+Relationships define how tables are connected to each other.
+
+There are 3 types:
+1. One-to-One:  1 user has 1 profile
+2. One-to-Many: 1 user has MANY tickets
+3. Many-to-Many: 1 ticket can have MANY tags, 1 tag can be on MANY tickets
+
+OUR RELATIONSHIPS:
+
+1. User → Tickets (One-to-Many)
+   One user can create many tickets.
+   But each ticket was created by only ONE user.
+
+   USER TABLE              TICKETS TABLE
+   ┌──────────────┐        ┌──────────────────────────┐
+   │ id: "user1"  │───┐    │ id: "ticket1"            │
+   │ name: "John" │   │    │ title: "Login broken"    │
+   └──────────────┘   ├──→ │ createdById: "user1" ←── │
+                      │    └──────────────────────────┘
+                      │    ┌──────────────────────────┐
+                      │    │ id: "ticket2"            │
+                      └──→ │ title: "Can't upload"    │
+                           │ createdById: "user1" ←── │
+                           └──────────────────────────┘
+
+   The "createdById" in the tickets table is called a FOREIGN KEY.
+   It "points to" the primary key (id) in the users table.
+
+2. Ticket → Comments (One-to-Many)
+   One ticket can have many comments.
+   But each comment belongs to exactly ONE ticket.
+
+3. User → Comments (One-to-Many)
+   One user can write many comments.
+   But each comment is written by exactly ONE user.
+
+So a Comment has TWO foreign keys:
+  - ticketId → which ticket it belongs to
+  - userId   → who wrote it
+
+This is called a "bridge" - Comments connect Users and Tickets.
+
+
+============================================================
+SECTION 5: WHAT ARE ENUMs?
+============================================================
+
+An ENUM is a predefined list of allowed values for a field.
+
+Example:
+  enum TicketStatus {
+    open
+    pending
+    closed
+  }
+
+If you try to save a ticket with status = "resolved" (not in the enum),
+the database will REJECT it with an error.
+
+This prevents bugs where someone saves "Open" instead of "open",
+or makes a typo like "clsoed" instead of "closed".
+
+Our Enums:
+  Role:         customer, agent
+  TicketStatus: open, pending, closed
+  Priority:     low, medium, high
+
+
+============================================================
+SECTION 6: WHAT IS A PRIMARY KEY vs FOREIGN KEY?
+============================================================
+
+PRIMARY KEY:
+  - A column that uniquely identifies EACH ROW in a table
+  - In our schema: the "id" field in every model
+  - We use cuid() to generate unique IDs like: "clx8f9abc123xyz"
+  - No two rows can have the same primary key
+
+  cuid() vs UUID vs Auto-Increment:
+    - Auto-increment: 1, 2, 3, 4... (predictable, easy to guess)
+    - UUID: 550e8400-e29b-41d4-a716-446655440000 (completely random)
+    - cuid: clx8f9abc123xyz (shorter, URL-safe, collision-resistant)
+    We use cuid() because it's short and safe.
+
+FOREIGN KEY:
+  - A column in TABLE B that references the primary key of TABLE A
+  - Creates a link between two tables
+  - Example: tickets.createdById references users.id
+
+  When you try to insert a ticket with createdById = "abc",
+  but no user with id = "abc" exists, the database will REJECT it.
+  This is called "referential integrity" - the database enforces
+  that relationships always point to real, existing records.
+
+ON DELETE actions:
+  - Cascade: if the parent record is deleted, delete children too
+    (delete user → delete their tickets and comments)
+  - SetNull: if the parent is deleted, set the foreign key to NULL
+    (delete agent → their assigned tickets have assignedToId = null)
+
+
+============================================================
+SECTION 7: HOW PRISMA MIGRATIONS WORK
+============================================================
+
+A MIGRATION is a file that records a database change.
+
+Think of migrations like Git commits - but for your database.
+Each migration records WHAT changed and WHEN.
+
+Migration workflow:
+1. You modify schema.prisma (e.g., add a new field)
+2. Run: npx prisma migrate dev --name "added_phone_field"
+3. Prisma creates a migration file: 
+   prisma/migrations/20240506_added_phone_field/migration.sql
+4. Prisma runs that SQL on your database
+5. The change is applied and recorded
+
+WHY MIGRATIONS ARE IMPORTANT:
+- Your teammates can run migrations to get the same DB structure
+- In production, you apply migrations carefully
+- You can see the complete history of database changes
+- You can roll back if something goes wrong
+
+TO RUN OUR FIRST MIGRATION:
+(First, make sure PostgreSQL is running and DATABASE_URL is set)
+
+  cd backend
+  npx prisma migrate dev --name "initial_schema"
+
+This will:
+1. Read our schema.prisma
+2. Generate SQL to create users, tickets, comments tables
+3. Run that SQL on our database
+4. Create a prisma/migrations/ folder with the migration file
+5. Generate the Prisma Client (JavaScript code to query the database)
+
+
+============================================================
+SECTION 8: VIEWING YOUR DATABASE - PRISMA STUDIO
+============================================================
+
+Prisma Studio is a visual database browser!
+Run it with:
+  npx prisma studio
+
+It opens a web UI at http://localhost:5555 where you can:
+- View all tables and records
+- Add, edit, delete records manually
+- Filter and sort data
+- Great for debugging!
+
+
+============================================================
+SECTION 9: HOW TO CREATE THE DATABASE
+============================================================
+
+Before running migrations, you need to create the database.
+
+In PostgreSQL, connect to the database using psql or pgAdmin:
+
+  Option 1 - Using psql command line:
+    psql -U postgres
+    CREATE DATABASE support_tickets;
+    \q
+
+  Option 2 - Using pgAdmin (GUI):
+    Right-click "Databases" → Create → Database
+    Name: support_tickets
+
+Then update your .env file:
+  DATABASE_URL="postgresql://postgres:YOUR_PASSWORD@localhost:5432/support_tickets"
+
+Replace YOUR_PASSWORD with your actual PostgreSQL password.
+
+Then run the migration:
+  cd backend
+  npx prisma migrate dev --name "initial_schema"
+
+
+============================================================
+SECTION 10: COMPLETE FLOW - REQUEST TO DATABASE
+============================================================
+
+Here's the complete journey of data in our system:
+
+1. USER fills out a form in React (frontend)
+2. React sends HTTP POST /api/tickets with JSON data (via Axios)
+3. Express receives the request in server.js
+4. Middleware runs: auth check, validation, etc.
+5. Router matches /api/tickets to ticketController.createTicket
+6. Controller calls: await prisma.ticket.create({ data: {...} })
+7. Prisma generates SQL: INSERT INTO tickets (...) VALUES (...);
+8. PostgreSQL executes the SQL and stores the data
+9. PostgreSQL returns the created row to Prisma
+10. Prisma returns a JavaScript object to the controller
+11. Controller sends JSON response back to the frontend
+12. React updates the UI to show the new ticket
+
+That's the full journey! Every request flows through all these layers.
+
+
+============================================================
+WHAT'S NEXT? (Phase 3)
+============================================================
+
+Now that the database is designed, we will build:
+1. User registration API endpoint
+2. User login API endpoint  
+3. Password hashing with bcrypt
+4. JWT token generation on successful login
+5. Protected middleware that verifies tokens on every request
+6. Role-based access control (customer vs agent)
+
+This is the security layer of our application!
+============================================================

@@ -1,0 +1,278 @@
+// =============================================
+// backend/prisma/schema.prisma
+// =============================================
+// Prisma Schema - Database Blueprint
+//
+// WHAT IS PRISMA?
+// Prisma is an ORM (Object-Relational Mapper).
+// ORM = a tool that lets you write database queries
+// using JavaScript objects instead of raw SQL.
+//
+// Instead of writing:
+//   SELECT * FROM tickets WHERE status = 'open';
+//
+// With Prisma you write:
+//   await prisma.ticket.findMany({ where: { status: 'open' } });
+//
+// WHAT IS THIS SCHEMA FILE?
+// This file is the "blueprint" of your database.
+// When you run "prisma migrate dev", Prisma reads
+// this file and creates/updates the actual tables
+// in your PostgreSQL database.
+//
+// HOW IT WORKS:
+// 1. You define models here (User, Ticket, Comment)
+// 2. Run: npx prisma migrate dev --name migration_name
+// 3. Prisma generates SQL and runs it on your database
+// 4. Prisma also generates a TypeScript client so you get
+//    autocomplete when writing database queries
+// =============================================
+
+// The generator block tells Prisma what to generate
+// "prisma-client-js" = the JavaScript/TypeScript database client
+generator client {
+  provider = "prisma-client-js"
+}
+
+// The datasource block tells Prisma which database to use
+// "postgresql" = PostgreSQL database
+// The URL comes from the DATABASE_URL in your .env file
+datasource db {
+  provider = "postgresql"
+}
+
+// =============================================
+// MODEL: User
+// =============================================
+// A User is anyone who can log into the system.
+// They can be a "customer" (creates tickets) or
+// an "agent" (manages and resolves tickets).
+//
+// DATABASE TABLE: "users"
+// =============================================
+model User {
+  id        String   @id @default(cuid())
+  // @id = this field is the primary key
+  // @default(cuid()) = auto-generates a unique ID like "clxyz123abc"
+  // cuid() is more collision-resistant than sequential integers
+
+  name      String
+  // User's full name, e.g., "John Smith"
+
+  email     String   @unique
+  // @unique = no two users can have the same email
+  // This is how we prevent duplicate accounts
+
+  password  String
+  // We NEVER store plain passwords!
+  // This stores the bcrypt HASH of the password
+  // bcrypt is a one-way algorithm - you can't reverse a hash
+  // When user logs in: bcrypt.compare(input, hash) → true/false
+
+  role      Role     @default(customer)
+  // Role is an enum (defined below) - either "customer" or "agent"
+  // @default(customer) = new users are customers by default
+
+  departmentId String?
+  department   Department? @relation(fields: [departmentId], references: [id], onDelete: SetNull)
+  // Link agents/users to a specialist department
+
+  createdAt DateTime @default(now())
+  // @default(now()) = automatically sets the timestamp when created
+
+  updatedAt DateTime @updatedAt
+  // @updatedAt = automatically updates timestamp on every change
+
+  // RELATIONS:
+  // These don't create database columns directly.
+  // They tell Prisma how this model relates to others.
+  
+  ticketsCreated   Ticket[]  @relation("CreatedByUser")
+  // A user can create MANY tickets (one-to-many relationship)
+  // @relation name helps Prisma distinguish multiple relations to same model
+
+  ticketsAssigned  Ticket[]  @relation("AssignedToAgent")
+  // An agent can be ASSIGNED to many tickets
+
+  comments  Comment[]
+  // A user can write many comments
+
+  activities TicketActivity[]
+  // A user can have many ticket activities
+
+  @@map("users")
+  // @@map("users") = the actual PostgreSQL table name is "users"
+  // Without this, Prisma would use "User" (capital U)
+}
+
+// =============================================
+// ENUM: Role
+// =============================================
+// An enum is a fixed list of allowed values.
+// A User's role can ONLY be "customer" or "agent".
+// This prevents typos and invalid values.
+// =============================================
+enum Role {
+  customer
+  agent
+}
+
+// =============================================
+// MODEL: Ticket
+// =============================================
+// A Ticket is a support request created by a customer.
+// It has a status (open/pending/closed) and priority.
+// It can be assigned to an agent who will resolve it.
+//
+// DATABASE TABLE: "tickets"
+// =============================================
+model Ticket {
+  id          String       @id @default(cuid())
+
+  title       String
+  // Short description of the issue, e.g., "Login not working"
+
+  description String       @db.Text
+  // @db.Text = store as TEXT type in PostgreSQL (supports long text)
+  // Detailed explanation of the issue
+
+  status      TicketStatus @default(open)
+  // Current state: open → pending → closed
+
+  priority    Priority     @default(medium)
+  // Urgency level: low, medium, high
+
+  departmentId String?
+  department   Department? @relation(fields: [departmentId], references: [id], onDelete: SetNull)
+  // Ticket routing by department
+
+  resolvedAt  DateTime?
+  // Timestamp when the ticket was marked closed
+
+  // FOREIGN KEY: createdById
+  // This links the ticket to the user who created it.
+  // It stores the User's "id" value.
+  // FOREIGN KEY = a field that references another table's primary key
+  createdById String
+  createdBy   User         @relation("CreatedByUser", fields: [createdById], references: [id], onDelete: Cascade)
+  // fields: [createdById] = the foreign key column in THIS table
+  // references: [id] = the column it references in the User table
+  // onDelete: Cascade = if the user is deleted, delete their tickets too
+
+  // FOREIGN KEY: assignedToId (optional - may not be assigned yet)
+  assignedToId String?
+  // The "?" means this field is optional (nullable in the database)
+  assignedTo   User?        @relation("AssignedToAgent", fields: [assignedToId], references: [id], onDelete: SetNull)
+  // onDelete: SetNull = if the agent is deleted, set this to NULL
+
+  comments    Comment[]
+  // One ticket can have MANY comments (one-to-many)
+
+  attachments Attachment[]
+  // A ticket can have multiple file attachments
+
+  activities  TicketActivity[]
+  // Audit trail for status, priority and assignment changes
+
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  @@map("tickets")
+}
+
+model Attachment {
+  id        String   @id @default(cuid())
+  ticketId  String
+  ticket    Ticket   @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  url       String
+  filename  String
+  mimeType  String
+  createdAt DateTime @default(now())
+
+  @@map("attachments")
+}
+
+model TicketActivity {
+  id        String   @id @default(cuid())
+  ticketId  String
+  ticket    Ticket   @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  action    String
+  oldValue  String?  @db.Text
+  newValue  String?  @db.Text
+  createdAt DateTime @default(now())
+
+  @@map("ticket_activities")
+}
+
+model Department {
+  id      String   @id @default(cuid())
+  name    String   @unique
+  tickets Ticket[]
+  users   User[]
+
+  @@map("departments")
+}
+
+// =============================================
+// ENUM: TicketStatus
+// =============================================
+// The lifecycle of a ticket:
+// open → (agent picks it up) → pending → (issue fixed) → closed
+// =============================================
+enum TicketStatus {
+  open
+  pending
+  closed
+}
+
+// =============================================
+// ENUM: Priority
+// =============================================
+// How urgent is this ticket?
+// Affects display order and notifications
+// =============================================
+enum Priority {
+  low
+  medium
+  high
+}
+
+// =============================================
+// MODEL: Comment
+// =============================================
+// Comments are messages added to a ticket.
+// Both customers and agents can add comments.
+// Agents can also add "internal notes" that
+// only other agents can see (not visible to customers).
+//
+// DATABASE TABLE: "comments"
+// =============================================
+model Comment {
+  id           String  @id @default(cuid())
+
+  message      String  @db.Text
+  // The actual comment text
+
+  isInternalNote Boolean @default(false)
+  // If true, this comment is only visible to agents
+  // Customers cannot see internal notes
+  // Great for agents to discuss behind the scenes
+
+  // FOREIGN KEY: ticketId
+  // Links this comment to a specific ticket
+  ticketId     String
+  ticket       Ticket  @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  // onDelete: Cascade = if ticket is deleted, delete all its comments too
+
+  // FOREIGN KEY: userId
+  // Links this comment to the user who wrote it
+  userId       String
+  user         User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@map("comments")
+}

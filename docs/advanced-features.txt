@@ -1,0 +1,101 @@
+============================================================
+PHASE 11: ADVANCED FEATURES (NEXT STEPS)
+Support Ticketing System
+============================================================
+1. FILE ATTACHMENTS (Images, PDFs)
+============================================================
+
+Users often need to upload screenshots of their issues.
+
+How to implement:
+1. Backend: Add `multer` middleware to handle `multipart/form-data`.
+2. Storage: Do NOT save files in your database or directly on your server
+   (this makes scaling and Docker deployments difficult).
+   Instead, use a service like AWS S3 or Cloudinary.
+3. Prisma: Add an `Attachment` model linking to the Ticket model, 
+   storing the S3 URL of the uploaded file.
+4. Frontend: Change your form to accept files and send them using FormData.
+
+
+============================================================
+2. REAL-TIME UPDATES WITH SOCKET.IO
+============================================================
+
+Currently, if an agent replies to a ticket, the customer has to
+refresh the page to see the new comment. 
+
+How to implement:
+1. Backend: Install `socket.io` and attach it to your Express server.
+2. When a comment is created in the controller, emit a socket event:
+   `io.to(ticketId).emit('newComment', comment)`
+3. Frontend: Install `socket.io-client`. In `TicketDetailPage.jsx`,
+   connect to the socket and listen for 'newComment' events.
+   When received, append the new comment to the state array instantly.
+
+
+============================================================
+3. ADVANCED ANALYTICS DASHBOARD
+============================================================
+
+Agents and Admins need better insights into support operations.
+
+How to implement:
+1. Backend: Create a new endpoint `/api/analytics/summary`.
+2. Use Prisma's `groupBy` and aggregations to calculate:
+   - Average resolution time (time between creation and 'closed' status)
+   - Tickets created per day (for a line chart)
+   - Tickets resolved by each agent (leaderboard)
+3. Frontend: Install a charting library like `recharts` or `chart.js`.
+   Build beautiful visual dashboards for the agents.
+
+
+============================================================
+4. ACTIVITY LOGS (AUDIT TRAIL)
+============================================================
+
+When a ticket status changes, who changed it and when?
+
+How to implement:
+1. Prisma: Create a `TicketActivity` model:
+   `id`, `ticketId`, `userId`, `action` ("status_changed", "priority_changed"),
+   `oldValue`, `newValue`, `createdAt`.
+2. Backend: Every time you update a ticket in the controller,
+   also create a new `TicketActivity` record.
+3. Frontend: Display these activities in the ticket detail page,
+   interwoven with the comments, just like GitHub issues do!
+
+
+============================================================
+5. DEPARTMENT QUEUES / TICKET ROUTING
+============================================================
+
+Instead of all agents seeing all tickets, route them to specialists.
+
+How to implement:
+1. Prisma: Add a `Department` model ("Billing", "Technical", "Sales").
+2. Link Users (Agents) to Departments.
+3. Add a `departmentId` to Tickets.
+4. Frontend: Add a "Department" dropdown to the Create Ticket form.
+5. Backend: When an agent views the dashboard, only show them tickets
+   assigned to their department.
+
+
+============================================================
+6. FULL-TEXT SEARCH
+============================================================
+
+Our current search uses ILIKE, which is okay for small databases,
+but slow for millions of tickets.
+
+How to implement:
+1. Learn about PostgreSQL's built-in Full Text Search capabilities
+   (`to_tsvector` and `to_tsquery`).
+2. Alternatively, integrate an external search engine like 
+   Elasticsearch, Algolia, or Meilisearch.
+3. Sync your Prisma data to the search engine whenever a ticket 
+   is created or updated.
+
+
+Keep building, keep breaking things, and keep learning!
+Happy coding! 🚀
+============================================================

@@ -1,0 +1,339 @@
+============================================================
+PHASE 1: PROJECT SETUP - COMPLETE LEARNING GUIDE
+Support Ticketing System
+============================================================
+
+WHAT WAS DONE IN THIS PHASE?
+------------------------------
+We set up the complete foundation of a full-stack web application.
+Think of this as building the "skeleton" before adding any features.
+
+We created:
+1. The folder structure
+2. The React + Vite frontend
+3. The Node.js + Express backend
+4. Installed all the required libraries
+5. Set up environment variables
+6. Configured the tools we'll use
+
+
+============================================================
+SECTION 1: WHY DO WE HAVE SEPARATE FRONTEND AND BACKEND?
+============================================================
+
+Imagine a restaurant:
+- The FRONTEND is the dining room. It's what customers (users) see and interact with.
+- The BACKEND is the kitchen. It's where the real work happens - processing data,
+  talking to the database, and running business logic.
+- The DATABASE is the pantry/storage room where all food (data) is stored.
+
+Separating them gives us:
+✅ Independent development (different teams can work separately)
+✅ Security (the database is never directly accessible from the browser)
+✅ Reusability (the same backend API can serve web, mobile, desktop apps)
+✅ Scalability (we can scale the backend independently from the frontend)
+
+
+============================================================
+SECTION 2: WHAT IS REACT + VITE?
+============================================================
+
+REACT:
+React is a JavaScript library made by Facebook for building user interfaces.
+Instead of manipulating HTML directly, you build "components" - reusable
+pieces of UI (like LEGO blocks). React updates the page automatically when
+data changes, without refreshing the whole page.
+
+Example:
+  // A simple React component
+  function Button({ text, onClick }) {
+    return <button onClick={onClick}>{text}</button>;
+  }
+  // Now you can reuse it: <Button text="Submit" onClick={handleSubmit} />
+
+VITE:
+Vite is a super-fast build tool. It:
+- Starts the development server in milliseconds (webpack takes seconds)
+- Automatically refreshes your browser when you save a file (Hot Module Replacement)
+- Bundles your code efficiently for production
+
+COMMAND WE RAN:
+  npx create-vite@latest . -- --template react
+  (creates a React project in the current folder)
+
+
+============================================================
+SECTION 3: WHAT IS TAILWIND CSS?
+============================================================
+
+Tailwind CSS is a "utility-first" CSS framework.
+Instead of writing custom CSS like this:
+
+  .my-button {
+    background-color: blue;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 5px;
+  }
+
+With Tailwind, you add small utility classes directly to your HTML:
+
+  <button class="bg-blue-500 text-white px-5 py-2 rounded">Submit</button>
+
+Each class does ONE thing:
+- bg-blue-500 = background color blue
+- text-white = white text
+- px-5 = left + right padding of 5 units
+- py-2 = top + bottom padding of 2 units
+- rounded = rounded corners
+
+WHY USE TAILWIND?
+✅ Faster development - no switching between HTML and CSS files
+✅ Smaller CSS bundle - only the classes you USE are included
+✅ Consistent design - all sizes, colors, spacing are predefined
+✅ Easy to be responsive: md:text-lg = large text only on medium screens
+
+We used Tailwind CSS v4 with the new @tailwindcss/vite plugin.
+In index.css, the line "@import tailwindcss" loads all of Tailwind.
+
+
+============================================================
+SECTION 4: WHAT IS NODE.JS + EXPRESS?
+============================================================
+
+NODE.JS:
+Node.js lets you run JavaScript on the server (outside the browser).
+Normally JavaScript only works in browsers. Node.js changed that.
+It's built on Chrome's V8 JavaScript engine (the same engine that
+runs JS in your browser, but without the browser).
+
+EXPRESS:
+Express is a framework built on top of Node.js for building web servers.
+Without Express, you'd have to write a LOT of boilerplate code to handle
+HTTP requests. Express simplifies this:
+
+  Without Express (raw Node.js):
+    const http = require('http');
+    const server = http.createServer((req, res) => {
+      if (req.url === '/api/tickets' && req.method === 'GET') {
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ tickets: [] }));
+      }
+    });
+
+  With Express:
+    const express = require('express');
+    const app = express();
+    app.get('/api/tickets', (req, res) => {
+      res.json({ tickets: [] });
+    });
+
+Express handles:
+- URL routing (which function runs for which URL)
+- Request parsing (reading JSON body data)
+- Middleware (functions that run before/after route handlers)
+
+
+============================================================
+SECTION 5: WHAT IS AN API?
+============================================================
+
+API = Application Programming Interface.
+Think of it as a menu in a restaurant.
+
+The menu (API) tells you:
+- What dishes (data/actions) are available
+- How to order them (what URL to call, what data to send)
+- What you'll get back (the response format)
+
+REST API = Representational State Transfer API.
+It's a set of rules for how web APIs should work:
+
+HTTP Methods (the "verbs" of an API):
+  GET    = Read data       (like reading from a menu)
+  POST   = Create new data (like placing an order)
+  PUT    = Update data     (like changing your order)
+  DELETE = Remove data     (like cancelling your order)
+
+Our API routes will look like:
+  GET    /api/tickets       → Get all tickets
+  GET    /api/tickets/1     → Get ticket with id=1
+  POST   /api/tickets       → Create a new ticket
+  PUT    /api/tickets/1     → Update ticket with id=1
+  DELETE /api/tickets/1     → Delete ticket with id=1
+
+
+============================================================
+SECTION 6: WHAT IS MIDDLEWARE?
+============================================================
+
+Middleware is code that runs BETWEEN a request coming in
+and the route handler running. Think of a conveyor belt:
+
+  REQUEST → [Middleware 1] → [Middleware 2] → [Route Handler] → RESPONSE
+
+Our middleware chain:
+1. helmet()          → Adds security HTTP headers
+2. cors()            → Allows cross-origin requests from frontend
+3. rateLimit()       → Blocks IPs making too many requests
+4. express.json()    → Parses incoming JSON request bodies
+5. morgan()          → Logs every request to console
+6. authenticate      → Verifies the user's JWT token (protected routes only)
+7. Route handler     → Runs the actual business logic
+8. errorHandler      → Catches any errors and returns clean responses
+
+Each middleware calls next() to pass control to the next step.
+If a middleware doesn't call next(), the chain stops there.
+
+
+============================================================
+SECTION 7: WHAT ARE ENVIRONMENT VARIABLES?
+============================================================
+
+Environment variables are configuration values stored OUTSIDE your code.
+
+WHY?
+Imagine your code has:
+  const password = "my_secret_db_password_123";
+
+If you push this to GitHub, EVERYONE can see it!
+Instead, we store it in a .env file:
+  DB_PASSWORD=my_secret_db_password_123
+
+And in code we access it safely:
+  const password = process.env.DB_PASSWORD;
+
+RULES:
+❌ NEVER commit .env to git
+✅ DO commit .env.example (with fake placeholder values)
+✅ ADD .env to .gitignore
+
+VITE SPECIAL RULE:
+In the frontend, all environment variables MUST start with "VITE_"
+to be accessible in the browser (security feature):
+  VITE_API_URL=http://localhost:5000/api
+  
+In React code: import.meta.env.VITE_API_URL
+
+
+============================================================
+SECTION 8: FOLDER STRUCTURE EXPLAINED
+============================================================
+
+PROJECT ROOT
+├── frontend/               → React + Vite application
+│   ├── src/
+│   │   ├── components/    → Reusable UI pieces (Button, Card, etc.)
+│   │   ├── pages/         → Full page components (Login, Dashboard)
+│   │   ├── context/       → React Context for global state (auth)
+│   │   ├── api/           → Axios API call functions
+│   │   ├── hooks/         → Custom React hooks
+│   │   └── utils/         → Helper functions
+│   ├── .env               → Frontend environment variables
+│   └── vite.config.js     → Vite configuration (Tailwind + proxy)
+│
+├── backend/                → Node.js + Express API
+│   ├── src/
+│   │   ├── routes/        → URL routing (which URL runs which controller)
+│   │   ├── controllers/   → Business logic (what happens for each request)
+│   │   ├── middleware/     → Functions running before route handlers
+│   │   ├── services/      → External services (email, etc.)
+│   │   ├── utils/         → Helper functions (API response format)
+│   │   └── config/        → Configuration (Prisma client setup)
+│   ├── prisma/
+│   │   ├── schema.prisma  → Database models definition
+│   │   └── migrations/    → Database change history
+│   ├── .env               → Backend secrets (JWT, DB password, etc.)
+│   ├── .env.example       → Safe-to-commit template for .env
+│   ├── server.js          → Entry point (starts the server)
+│   └── src/app.js         → Express app setup (middleware + routes)
+│
+└── docs/                   → Learning documentation (these .txt files!)
+
+
+============================================================
+SECTION 9: WHAT ARE ROUTES, CONTROLLERS, SERVICES?
+============================================================
+
+Think of building a restaurant:
+
+ROUTES (The menu/order system):
+Routes define WHICH URL triggers WHICH function.
+  app.get('/api/tickets', ticketController.getAllTickets);
+  The URL /api/tickets with GET method → runs getAllTickets function
+
+CONTROLLERS (The chef taking orders):
+Controllers contain the logic for each API action.
+They receive the request, do some work, and send the response.
+  const getAllTickets = async (req, res) => {
+    const tickets = await prisma.ticket.findMany();
+    sendSuccess(res, { tickets });
+  };
+
+SERVICES (Specialized helpers):
+Services contain logic that isn't directly tied to HTTP.
+Example: EmailService handles sending emails.
+Controllers call services, not the other way around.
+This keeps code organized and reusable.
+
+
+============================================================
+SECTION 10: PACKAGES INSTALLED AND WHY
+============================================================
+
+BACKEND PACKAGES:
+  express          → Web server framework (handling HTTP requests)
+  cors             → Allow cross-origin requests from frontend
+  dotenv           → Load .env file variables into process.env
+  bcryptjs         → Hash passwords securely (never store plain passwords!)
+  jsonwebtoken     → Create and verify JWT tokens (authentication)
+  nodemailer       → Send emails (ticket notifications)
+  express-validator → Validate and sanitize user input
+  helmet           → Set security HTTP headers
+  express-rate-limit → Prevent API abuse / brute-force attacks
+  morgan           → HTTP request logger for debugging
+  @prisma/client   → Auto-generated database client
+
+BACKEND DEV PACKAGES (only needed during development):
+  nodemon     → Auto-restarts server when you save a file
+  jest        → Testing framework (write and run tests)
+  supertest   → Test HTTP endpoints without a real browser
+  prisma      → CLI tool for running migrations and generating client
+
+FRONTEND PACKAGES:
+  react-router-dom → Navigation between pages without page reloads
+  axios            → Make HTTP requests to the backend API
+  react-hot-toast  → Beautiful notification toasts
+  lucide-react     → Clean, modern SVG icon library
+  tailwindcss      → Utility-first CSS framework
+
+WHAT IS AXIOS?
+Axios is an HTTP client for making API requests from the frontend.
+It's similar to the built-in fetch() but with nicer syntax:
+
+  // fetch() - built-in browser API
+  const response = await fetch('/api/tickets');
+  const data = await response.json();
+
+  // axios - simpler and more features
+  const { data } = await axios.get('/api/tickets');
+
+Axios also automatically:
+- Converts responses to JSON
+- Handles errors more clearly
+- Allows setting default headers (e.g., Authorization: Bearer <token>)
+
+
+============================================================
+WHAT'S NEXT? (Phase 2)
+============================================================
+
+Now that the foundation is built, we will:
+1. Design the database using Prisma schema
+2. Define models: User, Ticket, Comment
+3. Set up relationships between models
+4. Run database migration to create actual tables
+5. Learn how PostgreSQL and Prisma work together
+
+Keep your code organized and commit to Git regularly!
+============================================================

@@ -1,0 +1,89 @@
+============================================================
+PHASE 5: COMMENT SYSTEM - COMPLETE LEARNING GUIDE
+Support Ticketing System
+============================================================
+
+WHAT WAS DONE IN THIS PHASE?
+------------------------------
+We built a real-time structured comment and reply system so
+customers and agents can communicate back and forth on tickets.
+
+Files involved:
+- backend/src/controllers/comment.controller.js
+- backend/src/routes/comment.routes.js
+- backend/prisma/schema.prisma (Comment Model)
+
+
+============================================================
+SECTION 1: DATABASE RELATIONS EXPLAINED
+============================================================
+
+A single Comment must belong to TWO things:
+1. The Ticket it was posted on (`ticketId` foreign key)
+2. The User who posted it (`userId` foreign key)
+
+In `schema.prisma`, we set:
+`onDelete: Cascade`
+This means if a Ticket is deleted from the database, PostgreSQL 
+will automatically delete every single Comment associated with 
+that ticket so we don't have "orphan" comments floating around.
+
+
+============================================================
+SECTION 2: INTERNAL NOTES (AGENT ONLY)
+============================================================
+
+One of our main project requirements is that Agents need to be
+able to discuss a ticket behind the scenes without the Customer
+seeing it.
+
+We accomplished this by adding a simple boolean to the database:
+`isInternalNote Boolean @default(false)`
+
+When fetching comments for a customer:
+The API automatically hides any comment where `isInternalNote = true`.
+
+When fetching comments for an agent:
+The API returns everything, but the frontend React code 
+highlights the internal notes with an orange background and a 
+lock icon so the agent knows the customer can't see it.
+
+
+============================================================
+SECTION 3: AUTOMATED STATUS CHANGES
+============================================================
+
+When a Customer submits a new ticket, the status is "Open".
+
+When an Agent replies to the ticket, we don't want the agent
+to have to manually change the status to "Pending" every time.
+
+In `comment.controller.js`, we wrote logic to automate this:
+```javascript
+// If the person commenting is an agent, and it's a public comment
+if (req.user.role === 'agent' && !isInternalNote) {
+  // Update the ticket status to 'pending' automatically
+  await prisma.ticket.update({
+    where: { id: ticketId },
+    data: { status: 'pending' }
+  });
+}
+```
+
+This ensures the ticket system flows smoothly!
+
+
+============================================================
+SECTION 4: THE API ENDPOINTS
+============================================================
+
+METHOD  URL                          ACCESS          DESCRIPTION
+------  ----                         ------          -----------
+POST    /api/comments                All logged in   Add comment
+GET     /api/comments/ticket/:id     All logged in   Fetch comments
+DELETE  /api/comments/:id            Owner/Agent     Delete comment
+
+Note: The GET endpoint checks the role of the user. If they are
+a customer, it verifies they actually own the ticket before
+sending the comments back. This is crucial for security!
+============================================================

@@ -1,0 +1,136 @@
+============================================================
+PHASE 10: DOCKER & DEPLOYMENT - COMPLETE LEARNING GUIDE
+Support Ticketing System
+============================================================
+
+WHAT WAS DONE IN THIS PHASE?
+------------------------------
+We prepared our application to be hosted on the internet (deployed).
+We created Dockerfiles for both frontend and backend, a 
+docker-compose.yml to run them together, and a GitHub Actions
+workflow for Continuous Integration.
+
+Files involved:
+- backend/Dockerfile
+- frontend/Dockerfile
+- docker-compose.yml
+- .github/workflows/main.yml
+
+
+============================================================
+SECTION 1: WHAT IS DOCKER?
+============================================================
+
+"It works on my machine!"
+This is the classic developer excuse when code breaks in production.
+Maybe your machine has Node 18, but the server has Node 14.
+Maybe your machine is Mac, but the server is Linux.
+
+DOCKER solves this problem using "Containers".
+A container is a lightweight, standalone, executable package that 
+includes EVERYTHING needed to run your code:
+- The code itself
+- The runtime (Node.js)
+- System tools
+- System libraries
+- Settings
+
+If a Docker container runs on your laptop, it is GUARANTEED to
+run exactly the same way on ANY server in the world.
+
+
+============================================================
+SECTION 2: UNDERSTANDING DOCKERFILES
+============================================================
+
+A Dockerfile is a recipe for building a container.
+
+Backend Dockerfile breakdown:
+`FROM node:18-alpine` → Start with a tiny Linux computer that has Node 18 installed.
+`WORKDIR /usr/src/app` → Create a folder inside that computer to hold our code.
+`COPY package*.json ./` → Copy our dependency list into the container.
+`RUN npm ci` → Install the dependencies.
+`COPY . .` → Copy the rest of our code into the container.
+`EXPOSE 5000` → Tell Docker this container listens on port 5000.
+`CMD ["npm", "start"]` → The command to run when the container starts.
+
+Frontend Dockerfile breakdown (Multi-stage build):
+We use two stages for the frontend to make the final container smaller.
+Stage 1: Build the React app (needs Node.js, takes up lots of space).
+Stage 2: Serve the built static files (HTML/CSS/JS) using Nginx (a fast web server).
+The final container ONLY contains Nginx and our built files, making it tiny!
+
+
+============================================================
+SECTION 3: WHAT IS DOCKER COMPOSE?
+============================================================
+
+Our application has three pieces:
+1. The PostgreSQL Database
+2. The Node.js Backend
+3. The React/Nginx Frontend
+
+Instead of starting each container manually and trying to network them
+together, we use `docker-compose.yml`.
+
+Docker Compose reads this file and:
+1. Downloads the PostgreSQL image
+2. Builds our backend image
+3. Builds our frontend image
+4. Connects them all to the same internal network so they can talk to each other
+5. Maps the ports so we can access them from our browser
+
+To start the entire production-ready system locally, you just run:
+  `docker-compose up -d`
+
+
+============================================================
+SECTION 4: CI/CD (CONTINUOUS INTEGRATION / DEPLOYMENT)
+============================================================
+
+We created `.github/workflows/main.yml`.
+
+GitHub Actions is a tool that automatically runs code whenever you 
+push to GitHub.
+
+Our workflow does the following on every push to the `main` branch:
+1. Provisions a fresh Linux server in the cloud.
+2. Checks out our code.
+3. Starts a test PostgreSQL database.
+4. Installs our backend dependencies.
+5. Runs our Jest API tests.
+6. Installs our frontend dependencies.
+7. Attempts to build the frontend.
+
+If ANY of these steps fail (e.g., a test fails, or the build crashes),
+GitHub will show a red X on your commit. This prevents you from
+deploying broken code to production!
+
+If all steps pass, you get a green checkmark ✅.
+In a full CI/CD pipeline, the next step would be to automatically
+deploy the code to your server.
+
+
+============================================================
+SECTION 5: DEPLOYMENT OPTIONS
+============================================================
+
+Now that your app is containerized with Docker, you can deploy it almost anywhere!
+
+1. VPS (Virtual Private Server) - e.g., DigitalOcean, Linode, AWS EC2
+   - Setup: Rent a $5/month server, install Docker, copy your code, run `docker-compose up -d`.
+   - Pros: Cheapest, full control.
+   - Cons: You have to manage the server yourself.
+
+2. PaaS (Platform as a Service) - e.g., Render, Railway, Heroku
+   - Setup: Connect your GitHub repo. They automatically build and deploy it.
+   - Pros: Easiest method, zero server management.
+   - Cons: More expensive than a VPS.
+
+3. Managed Database (Recommended)
+   - It is notoriously difficult to manage your own production database inside Docker
+     (backups, replication, updates).
+   - Recommendation: Use a managed database service like Supabase, AWS RDS, or Render PostgreSQL.
+   - You just change the `DATABASE_URL` in your `.env` to point to the managed DB,
+     and run the backend/frontend in Docker.
+============================================================

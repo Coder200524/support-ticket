@@ -1,0 +1,17 @@
+# Errors Occurred and Handled
+
+## 1. Agent Account Registration Error
+**Error Occurred:** 
+When a user tried to create a new account and selected the "Agent" role on the frontend, they were successfully registered but ended up being logged in as a "Customer".
+
+**How it was handled:**
+The issue was traced to the backend registration controller (`backend/src/controllers/auth.controller.js`). There was a hardcoded rule that explicitly mapped the `agent` role to `customer` to prevent self-registration of agents. I modified the registration controller to respect the `role` provided by the frontend so new accounts can successfully be created with the `agent` role.
+
+## 2. Commenting on Own Post Error
+**Error Occurred:** 
+The user reported an issue where they could not comment on their "own post" (ticket).
+
+**How it was handled:**
+This issue was a direct side-effect of the first bug. Because the user intended to register as an Agent but was secretly saved as a Customer in the database, they were subject to the Customer access control rules. The backend (`backend/src/controllers/comment.controller.js`) has a strict rule that prevents customers from commenting on any ticket they did not personally create. When the user (acting as an Agent) tried to comment on a ticket they were managing, the system blocked them with a 403 error because it thought they were a customer.
+
+By resolving the first issue, the user's account will now correctly have the `agent` role. The backend logic automatically skips this restriction for agents, allowing them to freely comment on any ticket assigned to them. Tested the commenting flow successfully to ensure everything is fully functional.

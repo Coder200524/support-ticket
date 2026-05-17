@@ -1,0 +1,251 @@
+============================================================
+PHASE 4 & 5: TICKET APIs & COMMENT SYSTEM - LEARNING GUIDE
+Support Ticketing System
+============================================================
+
+PHASE 4: TICKET APIs
+Files: ticket.controller.js, ticket.routes.js
+
+PHASE 5: COMMENT SYSTEM
+Files: comment.controller.js, comment.routes.js
+
+
+============================================================
+SECTION 1: TICKET API ENDPOINTS
+============================================================
+
+METHOD  URL                    ACCESS          DESCRIPTION
+------  ----                   ------          -----------
+GET     /api/tickets/stats     All logged in   Dashboard stats (counts)
+GET     /api/tickets           All logged in   List all/own tickets
+POST    /api/tickets           All logged in   Create a new ticket
+GET     /api/tickets/:id       All logged in   Get one ticket with comments
+PUT     /api/tickets/:id       All logged in   Update a ticket
+DELETE  /api/tickets/:id       All logged in   Delete a ticket
+
+COMMENT  URL                       ACCESS          DESCRIPTION
+-------  ----                      ------          -----------
+POST     /api/comments             All logged in   Add comment to ticket
+GET      /api/comments/ticket/:id  All logged in   Get ticket comments
+DELETE   /api/comments/:id         All logged in   Delete a comment
+
+
+============================================================
+SECTION 2: ROLE-BASED DATA ACCESS IN DETAIL
+============================================================
+
+CUSTOMER gets tickets this way:
+  prisma.ticket.findMany({
+    where: {
+      createdById: req.user.id  ← Only THEIR tickets
+    }
+  })
+
+AGENT gets tickets this way:
+  prisma.ticket.findMany({
+    where: {}  ← Empty where = ALL tickets
+  })
+
+This logic is in one place (ticket.controller.js):
+  const where = {};
+  if (req.user.role === 'customer') {
+    where.createdById = req.user.id;
+  }
+  // Agents don't add any filter (see everything)
+
+
+============================================================
+SECTION 3: WHAT IS FILTERING?
+============================================================
+
+Filtering means returning only records that match criteria.
+
+URL with filters:
+  GET /api/tickets?status=open&priority=high
+
+How it works in the controller:
+  const { status, priority } = req.query;
+
+  if (status) {
+    where.status = status;   // Only tickets with this status
+  }
+  if (priority) {
+    where.priority = priority; // Only tickets with this priority
+  }
+
+The database then generates SQL like:
+  WHERE status = 'open' AND priority = 'high'
+
+This returns only high-priority open tickets. Fast and efficient!
+
+
+============================================================
+SECTION 4: WHAT IS SEARCH?
+============================================================
+
+Search lets users find tickets by typing keywords.
+
+URL with search:
+  GET /api/tickets?search=login
+
+How it works:
+  if (search) {
+    where.OR = [
+      { title: { contains: search, mode: 'insensitive' } },
+      { description: { contains: search, mode: 'insensitive' } },
+    ];
+  }
+
+Prisma generates SQL like:
+  WHERE (title ILIKE '%login%' OR description ILIKE '%login%')
+
+'ILIKE' is PostgreSQL's case-insensitive LIKE operator.
+So searching "Login" will also find "login", "LOGIN", etc.
+
+OR means match records where EITHER title OR description contains the word.
+
+
+============================================================
+SECTION 5: WHAT IS PAGINATION?
+============================================================
+
+Pagination = returning data in chunks (pages) instead of all at once.
+
+PROBLEM: You have 10,000 tickets. Loading all at once:
+  - Too much data to send over network (slow)
+  - Too much to display on screen (confusing)
+  - Uses too much memory on both server and client
+
+SOLUTION: Return 10 tickets at a time, with navigation:
+  Page 1: tickets 1-10
+  Page 2: tickets 11-20
+  Page 3: tickets 21-30
+  ...
+
+URL with pagination:
+  GET /api/tickets?page=2&limit=10
+
+How it works:
+  const skip = (page - 1) * limit;
+  // page=2, limit=10 → skip=10 (skip first 10 records)
+
+  prisma.ticket.findMany({
+    skip: 10,  // Skip first 10
+    take: 10,  // Return next 10
+  })
+
+Response includes pagination metadata:
+  {
+    tickets: [...10 tickets...],
+    pagination: {
+      currentPage: 2,
+      totalPages: 50,
+      totalCount: 500,
+      hasNextPage: true,
+      hasPrevPage: true,
+      limit: 10
+    }
+  }
+
+Frontend uses this metadata to show page buttons and navigation.
+
+
+============================================================
+SECTION 6: THE include / select PATTERN IN PRISMA
+============================================================
+
+When fetching a ticket, you often also want related data
+(who created it? who is it assigned to?).
+
+INCLUDE: Fetch related records
+  const ticket = await prisma.ticket.findUnique({
+    where: { id: '...' },
+    include: {
+      createdBy: true,   // Include the FULL user object
+      comments: true,    // Include ALL comments
+    }
+  });
+
+SELECT: Only return specific fields (for security/performance)
+  const ticket = await prisma.ticket.findUnique({
+    where: { id: '...' },
+    include: {
+      createdBy: {
+        select: {          // Only return name and email, NOT the hashed password!
+          id: true,
+          name: true,
+          email: true,
+        }
+      },
+    }
+  });
+
+WHY USE SELECT?
+Security: Never return the password hash to the frontend.
+Performance: Less data to send over the network.
+
+
+============================================================
+SECTION 7: HOW COMMENTS WORK
+============================================================
+
+A comment belongs to:
+  1. A TICKET (ticketId foreign key)
+  2. A USER who wrote it (userId foreign key)
+
+Comment types:
+  isInternalNote = false → Public comment (everyone sees it)
+  isInternalNote = true  → Internal note (agents only)
+
+When an agent adds a public comment:
+  - Ticket status changes from 'open' to 'pending'
+  - This signals: "an agent is looking at this"
+
+When a customer adds a comment:
+  - Ticket stays in current status
+  - Agent gets notified (if email is configured)
+
+Comment data returned:
+  {
+    id: "...",
+    message: "We're investigating the issue.",
+    isInternalNote: false,
+    createdAt: "2024-05-06T10:00:00Z",
+    user: {
+      id: "...",
+      name: "Agent Smith",
+      role: "agent"
+    }
+  }
+
+The role is included so the frontend can style agent/customer comments differently.
+
+
+============================================================
+SECTION 8: HTTP STATUS CODES USED
+============================================================
+
+200 OK           → Successful GET, PUT, DELETE
+201 Created      → Successful POST (new resource created)
+401 Unauthorized → Not logged in (no/invalid token)
+403 Forbidden    → Logged in but no permission
+404 Not Found    → Resource doesn't exist
+409 Conflict     → Resource already exists (duplicate email)
+422 Unprocessable→ Validation failed (bad input data)
+500 Server Error → Something unexpected went wrong
+
+
+============================================================
+WHAT'S NEXT? (Phase 6)
+============================================================
+
+Now we build the React frontend:
+1. Authentication pages (Login, Register)
+2. Customer dashboard (view own tickets)
+3. Create ticket form
+4. Ticket details page with comments
+5. Agent dashboard (manage all tickets)
+6. React Router for navigation
+7. Axios for API calls
+8. Protected routes based on authentication state
+============================================================
