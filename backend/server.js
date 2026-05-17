@@ -38,7 +38,7 @@ const server = app.listen(PORT, async () => {
   console.log('🚀 ================================');
   console.log(`🚀 Backend running on port ${PORT}`);
   console.log(`🚀 Environment: ${process.env.NODE_ENV || 'development'}`);
-  console.log(`🚀 API URL: http://localhost:${PORT}/api`);
+  console.log(`🚀 API URL: ${process.env.API_URL ? process.env.API_URL + '/api' : `http://localhost:${PORT}/api`}`);
   console.log('🚀 ================================');
 
   // Test database connection
