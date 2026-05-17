@@ -142,7 +142,7 @@ const TicketDetailPage = () => {
     <div style={{ minHeight: '100vh', background: 'var(--color-bg-primary)' }}>
       <Navbar />
 
-      <main style={{ maxWidth: '900px', margin: '0 auto', padding: '32px 24px' }}>
+      <main className="page-main" style={{ maxWidth: '900px', margin: '0 auto', padding: '32px 24px' }}>
         {/* Back button */}
         <button onClick={() => navigate(-1)}
                 style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'none', border: 'none',
@@ -153,7 +153,7 @@ const TicketDetailPage = () => {
 
         {/* Ticket Header */}
         <div className="glass-card animate-fade-in-up" style={{ padding: '32px', marginBottom: '20px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
+          <div className="ticket-header-top" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
             <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
               <span className={statusConfig[ticket.status]?.class}>{statusConfig[ticket.status]?.label}</span>
               <span className={priorityConfig[ticket.priority]?.class}>{priorityConfig[ticket.priority]?.label}</span>
@@ -180,7 +180,7 @@ const TicketDetailPage = () => {
           </p>
 
           {/* Meta Info */}
-          <div style={{ display: 'flex', gap: '24px', flexWrap: 'wrap', paddingTop: '16px', borderTop: '1px solid var(--color-border)' }}>
+          <div className="ticket-meta" style={{ display: 'flex', gap: '24px', flexWrap: 'wrap', paddingTop: '16px', borderTop: '1px solid var(--color-border)' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--color-text-secondary)', fontSize: '0.85rem' }}>
               <User size={14} />
               <span>Created by <strong style={{ color: 'var(--color-text-primary)' }}>{ticket.createdBy?.name}</strong></span>
@@ -276,7 +276,7 @@ const TicketDetailPage = () => {
                         : 'rgba(15, 15, 26, 0.6)',
                     border: `1px solid ${c.isInternalNote ? 'rgba(245,158,11,0.2)' : c.user?.role === 'agent' ? 'rgba(124,58,237,0.2)' : 'rgba(51,65,85,0.3)'}`,
                   }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                      <div className="comment-header" style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                         <div style={{
                           width: '28px', height: '28px', borderRadius: '50%',

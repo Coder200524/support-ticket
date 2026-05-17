@@ -84,11 +84,11 @@ const AgentDashboardPage = () => {
     <div style={{ minHeight: '100vh', background: 'var(--color-bg-primary)' }}>
       <Navbar />
 
-      <main style={{ maxWidth: '1300px', margin: '0 auto', padding: '32px 24px' }}>
+      <main className="page-main" style={{ maxWidth: '1300px', margin: '0 auto', padding: '32px 24px' }}>
         {/* Header */}
-        <div style={{ marginBottom: '32px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+        <div className="agent-header" style={{ marginBottom: '32px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
           <div>
-            <h1 style={{ fontSize: '1.8rem', fontWeight: 800, color: 'var(--color-text-primary)', marginBottom: '4px' }}>
+            <h1 className="page-title" style={{ fontSize: '1.8rem', fontWeight: 800, color: 'var(--color-text-primary)', marginBottom: '4px' }}>
               Agent Dashboard 🛡️
             </h1>
             <p style={{ color: 'var(--color-text-secondary)' }}>
@@ -104,7 +104,7 @@ const AgentDashboardPage = () => {
         </div>
 
         {/* Stats Row */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '16px', marginBottom: '32px' }}>
+        <div className="stats-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '16px', marginBottom: '32px' }}>
           <StatCard icon={<Ticket size={24} color="#10b981" />} label="Total Tickets" value={stats.total}
                     bgColor="rgba(16,185,129,0.15)" />
           <StatCard icon={<AlertTriangle size={24} color="#3b82f6" />} label="Open" value={stats.open}
@@ -116,7 +116,7 @@ const AgentDashboardPage = () => {
         </div>
 
         {/* Analytics */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1.6fr 1fr', gap: '16px', marginBottom: '32px' }}>
+        <div className="analytics-grid" style={{ display: 'grid', gridTemplateColumns: '1.6fr 1fr', gap: '16px', marginBottom: '32px' }}>
           <div className="glass-card" style={{ padding: '24px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
               <h2 style={{ margin: 0, color: 'var(--color-text-primary)', fontSize: '1.05rem' }}>Weekly Ticket Activity</h2>
@@ -158,7 +158,7 @@ const AgentDashboardPage = () => {
         </div>
 
         {/* Filters */}
-        <div style={{ display: 'flex', gap: '12px', marginBottom: '24px', flexWrap: 'wrap', alignItems: 'center' }}>
+        <div className="filter-row" style={{ display: 'flex', gap: '12px', marginBottom: '24px', flexWrap: 'wrap', alignItems: 'center' }}>
           <form onSubmit={handleSearch} style={{ display: 'flex', flex: 1, minWidth: '200px', gap: '8px' }}>
             <div style={{ position: 'relative', flex: 1 }}>
               <Search size={16} color="var(--color-text-secondary)"
@@ -191,7 +191,7 @@ const AgentDashboardPage = () => {
 
         {/* Tickets Grid */}
         {loading ? (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))', gap: '16px' }}>
+          <div className="ticket-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '16px' }}>
             {[...Array(9)].map((_, i) => (
               <div key={i} className="skeleton" style={{ height: '160px', borderRadius: '16px' }} />
             ))}
@@ -204,7 +204,7 @@ const AgentDashboardPage = () => {
           </div>
         ) : (
           <>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))', gap: '16px' }}>
+            <div className="ticket-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '16px' }}>
               {tickets.map(ticket => (
                 <TicketCard key={ticket.id} ticket={ticket} />
               ))}
@@ -212,7 +212,7 @@ const AgentDashboardPage = () => {
 
             {/* Pagination */}
             {pagination && pagination.totalPages > 1 && (
-              <div style={{ display: 'flex', justifyContent: 'center', gap: '8px', marginTop: '32px' }}>
+              <div className="pagination" style={{ display: 'flex', justifyContent: 'center', gap: '8px', marginTop: '32px' }}>
                 <button className="btn-secondary" onClick={() => setCurrentPage(p => p - 1)}
                         disabled={!pagination.hasPrevPage}
                         style={{ opacity: !pagination.hasPrevPage ? 0.4 : 1 }}>

@@ -509,3 +509,152 @@ body {
 ::-webkit-scrollbar-thumb:hover {
   background: var(--color-accent-purple);
 }
+
+/* =============================================
+   RESPONSIVE — MOBILE FIRST
+   ============================================= */
+
+/* ---- Utility: responsive page wrapper ---- */
+.page-main {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 32px 24px;
+}
+
+@media (max-width: 768px) {
+  .page-main {
+    padding: 20px 16px;
+  }
+
+  /* ---- Stats grid: 2 columns on tablet/phone ---- */
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+
+  /* ---- Analytics charts: stack vertically ---- */
+  .analytics-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* ---- Ticket / content grids ---- */
+  .ticket-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* ---- Filter rows: wrap & stack ---- */
+  .filter-row {
+    flex-direction: column !important;
+    align-items: stretch !important;
+  }
+
+  .filter-row form,
+  .filter-row select,
+  .filter-row .input-field {
+    width: 100% !important;
+    min-width: unset !important;
+  }
+
+  /* ---- Auth cards: reduce padding ---- */
+  .auth-card {
+    padding: 32px 24px !important;
+  }
+
+  /* ---- Form cards ---- */
+  .form-card {
+    padding: 24px 20px !important;
+  }
+
+  /* ---- Ticket detail header: stack badges + dropdown ---- */
+  .ticket-header-top {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 12px !important;
+  }
+
+  .ticket-header-top select {
+    width: 100% !important;
+  }
+
+  /* ---- Meta info row in ticket detail: wrap ---- */
+  .ticket-meta {
+    flex-direction: column !important;
+    gap: 8px !important;
+  }
+
+  /* ---- Priority picker: 3 cols is fine, keep ---- */
+
+  /* ---- Submit buttons: full width on mobile ---- */
+  .form-actions {
+    flex-direction: column-reverse !important;
+    gap: 8px !important;
+  }
+
+  .form-actions button {
+    width: 100% !important;
+    justify-content: center !important;
+  }
+
+  /* ---- Agent dashboard header: stack ---- */
+  .agent-header {
+    flex-direction: column !important;
+    gap: 12px !important;
+    align-items: flex-start !important;
+  }
+
+  /* ---- Comment header row: wrap ---- */
+  .comment-header {
+    flex-wrap: wrap !important;
+    gap: 4px !important;
+  }
+
+  /* ---- Pagination: center & compact ---- */
+  .pagination {
+    flex-wrap: wrap !important;
+    justify-content: center !important;
+  }
+
+  /* ---- Attachment row ---- */
+  .attachment-row {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+  }
+
+  /* ---- Glass card: less inner padding on small screens ---- */
+  .glass-card {
+    border-radius: 12px;
+  }
+
+  /* ---- Buttons: ensure min touch target ---- */
+  .btn-primary,
+  .btn-secondary {
+    min-height: 44px;
+  }
+}
+
+@media (max-width: 480px) {
+  /* ---- Stats grid: single column on very small phones ---- */
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 10px !important;
+  }
+
+  /* ---- Auth card: edge-to-edge feel ---- */
+  .auth-card {
+    padding: 28px 18px !important;
+  }
+
+  /* ---- Page header font size ---- */
+  .page-title {
+    font-size: 1.4rem !important;
+  }
+
+  /* ---- Priority / role picker: keep 2-col (readable) ---- */
+  .role-grid {
+    grid-template-columns: 1fr 1fr !important;
+  }
+
+  /* ---- Recharts YAxis label width shrink ---- */
+  .recharts-yAxis .recharts-cartesian-axis-tick-value {
+    font-size: 10px !important;
+  }
+}

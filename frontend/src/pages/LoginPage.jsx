@@ -72,7 +72,7 @@ const LoginPage = () => {
       }} />
 
       {/* Login Card */}
-      <div className="glass-card animate-fade-in-up" style={{
+      <div className="glass-card auth-card animate-fade-in-up" style={{
         width: '100%', maxWidth: '440px', padding: '48px 40px',
         position: 'relative', zIndex: 1,
       }}>

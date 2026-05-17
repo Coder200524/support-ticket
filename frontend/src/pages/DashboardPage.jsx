@@ -74,10 +74,10 @@ const DashboardPage = () => {
     <div style={{ minHeight: '100vh', background: 'var(--color-bg-primary)' }}>
       <Navbar />
 
-      <main style={{ maxWidth: '1200px', margin: '0 auto', padding: '32px 24px' }}>
+      <main className="page-main" style={{ maxWidth: '1200px', margin: '0 auto', padding: '32px 24px' }}>
         {/* Welcome Header */}
         <div style={{ marginBottom: '32px' }}>
-          <h1 style={{
+          <h1 className="page-title" style={{
             fontSize: '1.8rem', fontWeight: 800, color: 'var(--color-text-primary)', marginBottom: '4px',
           }}>
             Welcome back, {user?.name?.split(' ')[0]}! 👋
@@ -88,7 +88,7 @@ const DashboardPage = () => {
         </div>
 
         {/* Stats Row */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '16px', marginBottom: '32px' }}>
+        <div className="stats-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '16px', marginBottom: '32px' }}>
           <StatCard icon={<Ticket size={22} color="#10b981" />} label="Total" value={stats.total} color="16, 185, 129" />
           <StatCard icon={<AlertTriangle size={22} color="#3b82f6" />} label="Open" value={stats.open} color="59, 130, 246" />
           <StatCard icon={<Clock size={22} color="#f59e0b" />} label="Pending" value={stats.pending} color="245, 158, 11" />
@@ -96,7 +96,7 @@ const DashboardPage = () => {
         </div>
 
         {/* Filters & Create Button */}
-        <div style={{ display: 'flex', gap: '12px', marginBottom: '24px', flexWrap: 'wrap', alignItems: 'center' }}>
+        <div className="filter-row" style={{ display: 'flex', gap: '12px', marginBottom: '24px', flexWrap: 'wrap', alignItems: 'center' }}>
           {/* Search */}
           <form onSubmit={handleSearch} style={{ display: 'flex', flex: 1, minWidth: '200px', gap: '8px' }}>
             <div style={{ position: 'relative', flex: 1 }}>
@@ -130,7 +130,7 @@ const DashboardPage = () => {
 
         {/* Ticket List */}
         {loading ? (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))', gap: '16px' }}>
+          <div className="ticket-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '16px' }}>
             {[...Array(6)].map((_, i) => (
               <div key={i} className="skeleton" style={{ height: '160px', borderRadius: '16px' }} />
             ))}
@@ -147,7 +147,7 @@ const DashboardPage = () => {
             </Link>
           </div>
         ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))', gap: '16px' }}>
+          <div className="ticket-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '16px' }}>
             {tickets.map(ticket => (
               <TicketCard key={ticket.id} ticket={ticket} />
             ))}

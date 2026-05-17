@@ -76,7 +76,7 @@ const CreateTicketPage = () => {
     <div style={{ minHeight: '100vh', background: 'var(--color-bg-primary)' }}>
       <Navbar />
 
-      <main style={{ maxWidth: '760px', margin: '0 auto', padding: '32px 24px' }}>
+      <main className="page-main" style={{ maxWidth: '760px', margin: '0 auto', padding: '32px 24px' }}>
         {/* Back button */}
         <button onClick={() => navigate(-1)}
                 style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'none', border: 'none',
@@ -87,7 +87,7 @@ const CreateTicketPage = () => {
           <ArrowLeft size={18} /> Back to Dashboard
         </button>
 
-        <div className="glass-card animate-fade-in-up" style={{ padding: '40px' }}>
+        <div className="glass-card form-card animate-fade-in-up" style={{ padding: '40px' }}>
           {/* Header */}
           <div style={{ marginBottom: '32px' }}>
             <h1 style={{ fontSize: '1.6rem', fontWeight: 800, color: 'var(--color-text-primary)', marginBottom: '6px' }}>
@@ -193,7 +193,7 @@ const CreateTicketPage = () => {
             </div>
 
             {/* Submit */}
-            <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
+            <div className="form-actions" style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
               <button type="button" className="btn-secondary" onClick={() => navigate(-1)}>
                 Cancel
               </button>

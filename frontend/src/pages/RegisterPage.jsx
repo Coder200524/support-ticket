@@ -70,7 +70,7 @@ const RegisterPage = () => {
         bottom: '-50px', left: '-50px', borderRadius: '50%',
       }} />
 
-      <div className="glass-card animate-fade-in-up" style={{
+      <div className="glass-card auth-card animate-fade-in-up" style={{
         width: '100%', maxWidth: '480px', padding: '48px 40px', position: 'relative', zIndex: 1,
       }}>
         {/* Logo */}
